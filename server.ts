@@ -69,7 +69,7 @@ app.get("/", async (req, res) => {
 
     const formattedBalances = Object.entries(balances).map(([owner, balance]) => ({ 
       address: owner,
-      effective_balance: formatEther(balance) 
+      effective_balance: parseFloat(formatEther(balance))
     }));
 
     res.json({ "Result": formattedBalances });

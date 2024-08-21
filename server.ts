@@ -4,7 +4,7 @@ import { mainnet } from "viem/chains";
 require("dotenv").config();
 
 const app = express();
-const port = 3000;
+const port = 8080;
 
 const dnftAddress: `0x${string}` = "0xDc400bBe0B8B79C07A962EA99a642F5819e3b712";
 const vaultAddress: `0x${string}` = "0x5B74DD13D4136443A7831fB7AD139BA123B5071B";

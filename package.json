@@ -6,7 +6,11 @@
   "scripts": {
     "build": "tsc",
     "dev": "nodemon --exec ts-node server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "prettier-format": "prettier --config .prettierrc './**/*.ts' --write",
+    "prettier-check": "prettier --config .prettierrc './**/*.ts' --check",
+    "lint-fix": "eslint --fix",
+    "lint-check": "eslint"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +22,10 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "eslint": "^9.9.0",
+    "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.2.0"
   }
 }

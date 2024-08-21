@@ -7,7 +7,10 @@ const dnftAbi = parseAbi([
     "function totalSupply() view returns(uint256)",
     "function ownerOf(uint256 tokenId) view returns(address)",
 ]);
-const vaultAbi = parseAbi(["function id2asset(uint256 id) view returns(uint256)"]);
+const vaultAbi = parseAbi([
+    "function id2asset(uint256 id) view returns(uint256)", 
+    "function balanceOf(address owner) view returns(uint256)"
+]);
 
 export async function getBalancesForAllNotes(client: PublicClient, blockNumber: bigint): Promise<Record<string, bigint>> {
     const totalSupply = await client.readContract({
@@ -54,6 +57,29 @@ export async function getBalancesForAllNotes(client: PublicClient, blockNumber: 
             }
             balances[owner] += balance;
         }
+    }
+
+    return balances;
+}
+
+export async function getBalancesForAddresses(client: PublicClient, addresses: `0x${string}`[], blockNumber: bigint): Promise<Record<string, bigint>> {
+
+    const results = await client.multicall({
+        contracts: addresses.map((address) => ({
+            address: vaultAddress,
+            abi: vaultAbi,
+            functionName: "balanceOf",
+            args: [address],
+        })),
+        allowFailure: false,
+        blockNumber
+    });
+
+    const balances: Record<string, bigint> = {};
+
+    for (let i = 0; i < addresses.length; i++) {
+        const balance = results[i];
+        balances[addresses[i]] = balance;
     }
 
     return balances;

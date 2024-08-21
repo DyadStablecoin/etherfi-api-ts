@@ -1,7 +1,7 @@
 import express, { Request } from "express";
-import { parseAbi, createPublicClient, http, parseEther, formatEther } from "viem";
+import { parseAbi, createPublicClient, http, parseEther, formatEther, getAddress } from "viem";
 import { mainnet } from "viem/chains";
-import { getBalancesForAllNotes } from "./balanceService";
+import { getBalancesForAddresses, getBalancesForAllNotes } from "./balanceService";
 require("dotenv").config();
 
 const app = express();
@@ -23,19 +23,44 @@ async function getBlockNumberOrDefault(req: Request): Promise<bigint> {
   return BigInt(blockNumberQuery);
 }
 
+function parseAddressesFromQuery(req: Request): `0x${string}`[] {
+  const address = req.query["address"];
+  let addresses: string[]
+  if (typeof address === "string") {
+    addresses = [address];
+  } else {
+    addresses = address as string[];
+  }
+  const parsedAddresses = addresses.map((address) => getAddress(address));
+  return parsedAddresses;
+}
+
 app.get("/", async (req, res) => {
   try {
 
     const blockNumber = await getBlockNumberOrDefault(req);
 
-    const balances = await getBalancesForAllNotes(client, blockNumber);
+    let balances: Record<string, bigint>;
+
+    if (req.query["address"]) {
+      let addresses: `0x${string}`[];
+      try {
+        addresses = parseAddressesFromQuery(req);
+      } catch (error) {
+        res.status(400).json({ error: "Invalid address" });
+        return;
+      }
+      balances = await getBalancesForAddresses(client, addresses, blockNumber);
+    } else {
+      balances = await getBalancesForAllNotes(client, blockNumber);
+    }
 
     const formattedBalances = Object.entries(balances).map(([owner, balance]) => ({
       address: owner,
       effective_balance: parseFloat(formatEther(balance))
     }));
 
-    res.json({ "Result": formattedBalances });
+    res.status(200).json({ "Result": formattedBalances });
 
   } catch (error) {
     console.log(error);
